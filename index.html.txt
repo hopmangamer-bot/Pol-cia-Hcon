@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Registro - Polícia Habbo</title>
+    <style>
+        body { background: #1a1a1a; color: white; font-family: sans-serif; text-align: center; padding-top: 50px; }
+        .box { background: #2a2a2a; padding: 20px; border-radius: 10px; display: inline-block; width: 350px; }
+        input, button { width: 90%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; }
+        button { background: #27ae60; color: white; font-weight: bold; cursor: pointer; }
+        .codigo { background: #f1c40f; color: black; padding: 10px; font-weight: bold; display: none; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Registro Militar</h2>
+        
+        <input type="text" id="nick" placeholder="Seu Nick no Habbo">
+        <button id="btnGerar" onclick="gerarCodigo()">1. Gerar Código</button>
+        
+        <div id="areaMissao" style="display:none">
+            <p>Coloque isso na missão do Habbo:</p>
+            <div id="codigoDisplay" class="codigo"></div>
+            <button onclick="verificarMissao()">2. Verificar Missão</button>
+        </div>
+
+        <div id="areaSenha" style="display:none">
+            <input type="password" id="senha" placeholder="Escolha uma senha">
+            <button onclick="finalizar()">3. Finalizar Registro</button>
+        </div>
+    </div>
+
+<script>
+    const SCRIPT_URL = "SUA_URL_DO_GOOGLE_SCRIPT_AQUI";
+    let codigoGerado = "";
+
+    function gerarCodigo() {
+        codigoGerado = "POL-" + Math.floor(1000 + Math.random() * 9000);
+        document.getElementById('codigoDisplay').innerText = codigoGerado;
+        document.getElementById('codigoDisplay').style.display = "block";
+        document.getElementById('areaMissao').style.display = "block";
+        document.getElementById('btnGerar').disabled = true;
+    }
+
+    async function verificarMissao() {
+        const nick = document.getElementById('nick').value;
+        const proxy = "https://api.allorigins.win/get?url=";
+        const habboApi = `https://www.habbo.com.br/api/public/users?name=${nick}`;
+        
+        try {
+            const resp = await fetch(proxy + encodeURIComponent(habboApi));
+            const json = await resp.json();
+            const perfil = JSON.parse(json.contents);
+
+            if (perfil.motto === codigoGerado) {
+                alert("✅ Identidade Confirmada!");
+                document.getElementById('areaMissao').style.display = "none";
+                document.getElementById('areaSenha').style.display = "block";
+            } else {
+                alert("❌ Código não encontrado! Sua missão atual é: " + perfil.motto);
+            }
+        } catch (e) { alert("Erro ao consultar Habbo."); }
+    }
+
+    function finalizar() {
+        const dados = {
+            nome: document.getElementById('nick').value,
+            senha: document.getElementById('senha').value
+        };
+
+        fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify(dados)
+        }).then(() => {
+            alert("🎯 Registro Completo! Bem-vindo à Polícia.");
+            location.reload();
+        });
+    }
+</script>
+</body>
+</html>
